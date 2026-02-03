@@ -18,7 +18,7 @@ import {
 
 interface Category {
   name: string;
-  icon: JSX.Element;
+  icon: React.ReactNode;
   bgColor: string;
 }
 
