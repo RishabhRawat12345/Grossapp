@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
+import { useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
@@ -32,18 +33,11 @@ const Popup = dynamic(
   { ssr: false }
 );
 
-const useMap = dynamic(
-  () => import("react-leaflet").then((m) => m.useMap),
-  { ssr: false }
-);
-
 function MapUpdater({ location }: { location: [number, number] }) {
   const map = useMap();
 
   useEffect(() => {
-    if (location) {
-      map.setView(location, 16);
-    }
+    map.setView(location, 16);
   }, [location, map]);
 
   return null;
@@ -79,8 +73,6 @@ export default function CheckoutClient() {
   });
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
     const L = require("leaflet");
 
     delete L.Icon.Default.prototype._getIconUrl;
@@ -217,9 +209,7 @@ export default function CheckoutClient() {
         }
       );
 
-      if (typeof window !== "undefined") {
-        window.location.href = res.url;
-      }
+      window.location.href = res.url;
     } catch (err: any) {
       toast.error(
         err.response?.data?.message ||
