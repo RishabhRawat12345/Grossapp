@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
@@ -80,6 +79,8 @@ export default function CheckoutClient() {
   });
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const L = require("leaflet");
 
     delete L.Icon.Default.prototype._getIconUrl;
@@ -129,6 +130,8 @@ export default function CheckoutClient() {
   }, [user]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     navigator.geolocation.getCurrentPosition(
       (pos) =>
         setLocation([
@@ -214,7 +217,9 @@ export default function CheckoutClient() {
         }
       );
 
-      window.location.href = res.url;
+      if (typeof window !== "undefined") {
+        window.location.href = res.url;
+      }
     } catch (err: any) {
       toast.error(
         err.response?.data?.message ||
