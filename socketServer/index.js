@@ -10,23 +10,25 @@ const port = process.env.PORT || 5000;
 
 const FRONTEND_URL = process.env.FRONTEND_URL;
 
-app.use(cors({
-  origin: FRONTEND_URL,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: FRONTEND_URL,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    credentials: true,
+  })
+);
+
+app.use(express.json());
 
 const io = new Server(server, {
   cors: {
     origin: FRONTEND_URL,
-    credentials: true
-  }
+    credentials: true,
+  },
 });
 
-app.use(express.json());
-
 io.on("connection", (socket) => {
-  let currentUserId: string | null = null;
+  let currentUserId = null;
 
   socket.on("identity", async (userId) => {
     if (!userId) return;
@@ -39,25 +41,31 @@ io.on("connection", (socket) => {
         userId,
         socketId: socket.id,
       });
+
       socket.emit("identity");
-    } catch (err: any) {}
+    } catch (err) {}
   });
 
   socket.on("join-order", (orderId) => {
+    if (!orderId) return;
+
     const roomName = `order_${orderId}`;
     socket.join(roomName);
     socket.emit("joined-order", { orderId, room: roomName });
   });
 
-  socket.on("deli-loc", ({ orderId, lat, lon }) => {
-    if (!orderId || lat === undefined || lon === undefined) return;
-    const roomName = `order_${orderId}`;
-    io.to(roomName).emit("deli-loc", { orderId, lat, lon });
-  });
-
   socket.on("leave-order", (orderId) => {
+    if (!orderId) return;
+
     const roomName = `order_${orderId}`;
     socket.leave(roomName);
+  });
+
+  socket.on("deli-loc", ({ orderId, lat, lon }) => {
+    if (!orderId || lat === undefined || lon === undefined) return;
+
+    const roomName = `order_${orderId}`;
+    io.to(roomName).emit("deli-loc", { orderId, lat, lon });
   });
 
   socket.on("orders", async (data) => {
@@ -83,7 +91,7 @@ io.on("connection", (socket) => {
       if (adminSockets.length > 0) {
         io.to("admin").emit("admin-new-order", fullOrder.data);
       }
-    } catch (err: any) {}
+    } catch (err) {}
   });
 
   socket.on("payment", async ({ orderItems, total, userId, address }) => {
@@ -100,7 +108,7 @@ io.on("connection", (socket) => {
       );
 
       socket.emit("payment-url", data.url);
-    } catch (err: any) {}
+    } catch (err) {}
   });
 
   socket.on("update-location", async ({ userId, latitude, longitude }) => {
@@ -115,7 +123,7 @@ io.on("connection", (socket) => {
           longitude,
         }
       );
-    } catch (err: any) {}
+    } catch (err) {}
   });
 
   socket.on("disconnect", () => {});
@@ -130,11 +138,16 @@ app.post("/notify", (req, res) => {
     io.emit(event, data);
   }
 
-  return res.status(200).json({ success: true });
+  res.status(200).json({ success: true });
 });
 
 app.get("/health", (req, res) => {
-  res.json({ status: "ok", connections: io.engine.clientsCount });
+  res.json({
+    status: "ok",
+    connections: io.engine.clientsCount,
+  });
 });
 
-server.listen(port, () => {});
+server.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
