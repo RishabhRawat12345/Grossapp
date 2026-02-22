@@ -9,7 +9,7 @@ const server = http.createServer(app);
 const port = process.env.PORT || 5000;
 
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: `${FRONTEND_URL}`,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   credentials: true,
 }));
