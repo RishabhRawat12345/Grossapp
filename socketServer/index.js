@@ -34,7 +34,7 @@ io.on("connection", (socket) => {
     socket.join(userId);
 
     try {
-      await axios.post("http://localhost:3000/api/socket/connect", {
+      await axios.post(`${FRONTEND_URL}/api/socket/connect`, {
         userId,
         socketId: socket.id,
       });
@@ -89,11 +89,11 @@ io.on("connection", (socket) => {
     try {
       if (!currentUserId || currentUserId !== data.userId) return;
 
-      const shop = await axios.post("http://localhost:3000/api/user/order", data);
+      const shop = await axios.post(`${FRONTEND_URL}/api/user/order`, data);
       const orderId = shop.data.order._id;
 
       const fullOrder = await axios.get(
-        `http://localhost:3000/api/user/order?orderId=${orderId}`
+        `${FRONTEND_URL}/api/user/order?orderId=${orderId}`
       );
 
       io.to(data.userId).emit("new-order", fullOrder.data);
@@ -111,7 +111,7 @@ io.on("connection", (socket) => {
 
   socket.on("payment", async ({ orderItems, total, userId, address }) => {
     try {
-      const { data } = await axios.post("http://localhost:3000/api/user/payment", {
+      const { data } = await axios.post(`${FRONTEND_URL}/api/user/payment`, {
         userId,
         items: orderItems,
         paymentMethod: "online",
@@ -126,7 +126,7 @@ io.on("connection", (socket) => {
 
   socket.on("update-location", async ({ userId, latitude, longitude }) => {
     try {
-      await axios.post("http://localhost:3000/api/socket/geoupdater", {
+      await axios.post(`${FRONTEND_URL}/api/socket/geoupdater`, {
         userId,
         latitude,
         longitude,
